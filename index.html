@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=750, initial-scale=0.5, maximum-scale=0.5, minimum-scale=0.5, user-scalable=no, viewport-fit=cover">
+  <script>
+    // 通过修改 viewport meta 的 initial-scale 实现手机端自适应
+    (function() {
+      var meta = document.querySelector('meta[name="viewport"]');
+      var w = window.screen.width || window.innerWidth || 375;
+      var scale = w / 750;
+      meta.setAttribute('content',
+        'width=750' +
+        ',initial-scale=' + scale.toFixed(6) +
+        ',minimum-scale=' + scale.toFixed(6) +
+        ',maximum-scale=' + scale.toFixed(6) +
+        ',user-scalable=no,viewport-fit=cover'
+      );
+      // 二次修正：部分浏览器首次设置不生效
+      setTimeout(function() {
+        meta.setAttribute('content',
+          'width=750' +
+          ',initial-scale=' + scale.toFixed(6) +
+          ',minimum-scale=' + scale.toFixed(6) +
+          ',maximum-scale=' + scale.toFixed(6) +
+          ',user-scalable=no,viewport-fit=cover'
+        );
+      }, 100);
+    })();
+  </script>
+  <title>导出成功</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      overflow-x: hidden;
+      max-width: 750px;
+      margin: 0 auto;
+    }
+
+    body {
+      font-family: 'PingFang SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #F5F5F5;
+      min-height: 100vh;
+      overflow-x: hidden;
+      max-width: 750px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 0;
+    }
+
+    .container {
+      width: 750px;
+      min-height: 1624px;
+      position: relative;
+      background: #F5F5F5;
+      overflow: hidden;
+      margin: 0 auto;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    /* ========== 状态栏 ========== */
+    .status-bar {
+      width: 750px; height: 88px; position: relative; background: #F5F5F5;
+    }
+    .status-time {
+      position: absolute; left: 42px; top: 28px; width: 108px; height: 36px;
+      text-align: center; color: black; font-size: 30px; font-weight: 600;
+    }
+    .status-icons {
+      position: absolute; right: 32px; top: 34.67px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .status-icons img { height: 22px; }
+
+    /* ========== 导航栏 ========== */
+    .nav-bar {
+      width: 750px; height: 88px; position: relative; overflow: hidden; background: #F5F5F5;
+    }
+    .nav-back {
+      position: absolute; left: 24px; top: 20px; width: 48px; height: 48px; cursor: pointer;
+    }
+    .nav-title {
+      position: absolute; left: 303px; top: 22px;
+      color: #242424; font-size: 36px; font-weight: 500;
+    }
+
+    /* ========== 文件卡片 ========== */
+    .file-card {
+      position: absolute; left: 32px; top: 200px; width: 686px; height: 361px;
+      background: white; border-radius: 24px; overflow: hidden;
+    }
+    .file-info { width: 686px; height: 212px; position: relative; background: white; }
+    .file-thumbnail { position: absolute; left: 32px; top: 32px; width: 110px; height: 148px; }
+    .file-thumbnail > img:first-child {
+      width: 110px; height: 148px; border-radius: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.08); object-fit: cover;
+    }
+    .file-badge { position: absolute; left: 6px; top: 110px; width: 32px; height: 32px; }
+    .file-details { position: absolute; left: 170px; top: 62px; width: 302px; height: 88px; }
+    .file-name-row { position: absolute; left: 0; top: 0; display: flex; align-items: center; }
+    .file-name { color: #242424; font-size: 32px; font-weight: 400; }
+    .file-edit-icon { position: absolute; left: 266px; top: 2px; width: 36px; height: 36px; cursor: pointer; }
+    .add-tag { position: absolute; left: 0; top: 56px; display: flex; align-items: center; cursor: pointer; }
+    .add-tag-text { color: #205AEF; font-size: 24px; font-weight: 400; }
+    .add-tag-icon { position: absolute; left: 98px; top: 4px; width: 24px; height: 24px; }
+    .divider { position: absolute; left: 32px; top: 212.5px; width: 622px; }
+    .action-buttons {
+      position: absolute; left: 0; top: 213px; width: 686px; height: 148px;
+      background: white; border-radius: 0 0 24px 24px;
+    }
+    .action-item {
+      position: absolute; top: 32px; width: 127.6px; height: 84px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .action-item:nth-child(1) { left: 24px; }
+    .action-item:nth-child(2) { left: 151.6px; }
+    .action-item:nth-child(3) { left: 279.2px; }
+    .action-item:nth-child(4) { left: 406.8px; }
+    .action-item:nth-child(5) { left: 534.4px; }
+    .action-icon { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+    .action-label { margin-top: 10px; text-align: center; color: #8F8F8F; font-size: 22px; font-weight: 400; width: 127.6px; }
+
+    /* ========== 广告区域容器（相对于container top:581px） ========== */
+    .ad-area-container {
+      position: absolute;
+      left: 0; top: 581px;
+      width: 750px;
+      height: 700px;
+      overflow: visible;
+    }
+
+    /* Lottie 后景 */
+    .lottie-back-container {
+      position: absolute; left: -25px; top: 0;
+      width: 800px; height: 600px;
+      z-index: 1; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    /* 广告卡片裁切层 */
+    .ad-clip-wrapper {
+      position: absolute; left: 0; top: 0;
+      width: 750px; height: 480px;
+      overflow: hidden;
+      z-index: 2;
+      pointer-events: none;
+      transition: height 0.6s cubic-bezier(0.34, 1.2, 0.64, 1);
+    }
+    .ad-clip-wrapper.expanded {
+      height: 700px;
+      overflow: visible;
+      pointer-events: auto;
+    }
+
+    /* 广告主卡片 */
+    .ad-card-wrapper {
+      position: absolute;
+      left: 32px; top: 50px;
+      width: 686px;
+      border-radius: 16px;
+      overflow: hidden;
+      z-index: 20;
+      transform: scale(0.92);
+      transform-origin: center top;
+      pointer-events: auto;
+    }
+    .ad-card-wrapper.expanded {
+      left: 56px; top: 10px;
+      width: 638px;
+      transform: scale(1);
+      transition: all 0.6s cubic-bezier(0.34, 1.2, 0.64, 1);
+    }
+
+    /* Lottie 前景 */
+    .lottie-front-container {
+      position: absolute; left: -25px; top: 0;
+      width: 800px; height: 600px;
+      z-index: 10; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .lottie-hidden { opacity: 0; visibility: hidden; }
+
+    /* ========== 广告主卡片内部 ========== */
+    .ad-image-section {
+      position: relative;
+      width: 638px;
+      height: 358.99px;
+      overflow: hidden;
+      border-radius: 16px 16px 0 0;
+    }
+    .ad-image-section img {
+      width: 638px;
+      height: 358.99px;
+      object-fit: cover;
+    }
+
+    .ad-tag {
+      position: absolute;
+      right: 16px;
+      top: 16px;
+      width: 84px;
+      height: 36px;
+      background: rgba(0, 0, 0, 0.30);
+      border-radius: 8px;
+      overflow: hidden;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      gap: 2px;
+      box-sizing: border-box;
+    }
+    .ad-tag-text {
+      color: rgba(255, 255, 255, 0.60);
+      font-size: 22px;
+      font-weight: 400;
+      white-space: nowrap;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .ad-tag-arrow {
+      width: 20px;
+      height: 20px;
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .ad-text-section {
+      width: 638px;
+      height: 160px;
+      background: white;
+      position: relative;
+    }
+    .ad-description {
+      position: absolute;
+      left: 32px;
+      top: 16px;
+      width: 574px;
+      font-size: 32px;
+      font-weight: 400;
+      color: rgba(0, 0, 0, 0.86);
+      line-height: 1.4;
+      text-align: justify;
+    }
+    .ad-meta {
+      position: absolute;
+      left: 32px;
+      top: 120px;
+      width: 574px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+    }
+    .ad-rating {
+      width: 60px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    .ad-rating-score {
+      color: rgba(0, 0, 0, 0.44);
+      font-size: 24px;
+      font-weight: 500;
+      text-align: right;
+    }
+    .ad-rating-star {
+      position: absolute;
+      left: 44px;
+      top: 8px;
+      width: 16px;
+      height: 16px;
+    }
+    .ad-meta-divider {
+      width: 1px;
+      height: 20px;
+      background: rgba(0, 0, 0, 0.08);
+      margin: 0 12px;
+    }
+    .ad-category { color: rgba(0, 0, 0, 0.44); font-size: 24px; font-weight: 400; }
+
+    .ad-app-section {
+      width: 638px;
+      height: 80px;
+      background: white;
+      position: relative;
+      border-radius: 0 0 16px 16px;
+    }
+    .ad-app-info {
+      position: absolute;
+      left: 32px;
+      top: 8px;
+      width: 398px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+    }
+    .ad-app-icon { width: 48px; height: 48px; border-radius: 12px; }
+    .ad-app-name {
+      margin-left: 12px;
+      color: rgba(0, 0, 0, 0.44);
+      font-size: 24px;
+      font-weight: 400;
+    }
+    .ad-detail-btn {
+      position: absolute;
+      right: 32px;
+      top: 8px;
+      width: 152px;
+      height: 48px;
+      background: rgba(19, 108, 233, 0.08);
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ad-detail-btn span {
+      color: #136CE9;
+      font-size: 24px;
+      font-weight: 400;
+    }
+
+    /* ========== 轮播卡片系统 ========== */
+    /* 旋转+位移层：rotate/translate/opacity/zIndex 均在此层，内容card不受旋转影响 */
+    .carousel-wrap {
+      position: absolute;
+      left: 56px;
+      top: 10px;
+      width: 638px;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 1;
+      transform-origin: center top;
+      transition: rotate    0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                  translate 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity   0.4s ease;
+    }
+
+    /* 内容缩放层：只负责scale，不旋转，内容始终水平 */
+    .carousel-card {
+      width: 638px;
+      transform-origin: center top;
+      transition: scale 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* 卡片内层：圆角裁切 */
+    .carousel-card .card-inner {
+      width: 638px;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+    .carousel-card .ad-image-section {
+      width: 638px; height: 358.99px;
+      overflow: hidden; border-radius: 0; position: relative;
+    }
+    .carousel-card .ad-image-section img {
+      width: 638px; height: 358.99px;
+      object-fit: cover; border-radius: 0; display: block;
+    }
+    .carousel-card .ad-text-section { width: 638px; }
+    .carousel-card .ad-app-section  { width: 638px; border-radius: 0; }
+
+    /* 蒙层 */
+    .carousel-card .card-overlay {
+      position: absolute;
+      left: 0; top: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.20);
+      z-index: 50; pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+
+    /* ========== 底部轮播指示器 ========== */
+    .bottom-dots {
+      position: absolute;
+      left: 50%; top: 651px;
+      transform: translateX(-50%);
+      display: flex; align-items: center; gap: 10px;
+      z-index: 15;
+      opacity: 0;
+      transition: opacity 0.5s ease 0.3s;
+    }
+    .bottom-dots.visible { opacity: 1; }
+
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 30px;
+      background: rgba(0, 0, 0, 0.30);
+      transition: all 0.4s ease;
+      cursor: pointer;
+    }
+    .dot.active {
+      width: 24px;
+      background: rgba(0, 0, 0, 0.86);
+      border-radius: 100px;
+    }
+
+    /* ========== 底部按钮 ========== */
+    .bottom-actions {
+      position: absolute; left: 0; top: 1464px; width: 750px; height: 160px;
+    }
+    .buttons-container { width: 750px; height: 118px; background: white; position: relative; }
+    .btn {
+      position: absolute; top: 19px; height: 80px;
+      border-radius: 16px; display: flex; align-items: center; justify-content: center;
+      font-size: 28px; font-weight: 500; cursor: pointer; border: none;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-secondary {
+      left: 32px; width: 335px; background: rgba(32, 90, 239, 0.08); color: #205AEF;
+    }
+    .btn-primary {
+      left: 383px; width: 335px; background: #205AEF; color: white;
+    }
+    .home-indicator { width: 750px; height: 42px; background: white; position: relative; }
+    .home-indicator-bar {
+      position: absolute; left: 241px; top: 16px; width: 268px; height: 10px;
+      background: black; border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 状态栏 -->
+    <div class="status-bar">
+      <div class="status-time">9:41</div>
+      <div class="status-icons">
+        <img src="assets/CodeBuddyAssets/1808_4293/3.svg" alt="signal">
+        <img src="assets/CodeBuddyAssets/1808_4293/2.svg" alt="wifi">
+        <img src="assets/CodeBuddyAssets/1808_4293/1.svg" alt="battery">
+      </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <div class="nav-bar">
+      <div class="nav-back">
+        <img src="assets/CodeBuddyAssets/1808_4293/4.svg" alt="返回">
+      </div>
+      <div class="nav-title">导出成功</div>
+    </div>
+
+    <!-- 文件卡片 -->
+    <div class="file-card">
+      <div class="file-info">
+        <div class="file-thumbnail">
+          <img src="assets/CodeBuddyAssets/1808_4293/16.png" alt="PDF预览">
+          <div class="file-badge">
+            <img src="assets/CodeBuddyAssets/1808_4293/5.svg" alt="PDF标识">
+          </div>
+        </div>
+        <div class="file-details">
+          <div class="file-name-row">
+            <span class="file-name">格式转换1108.pdf</span>
+            <img class="file-edit-icon" src="assets/CodeBuddyAssets/1808_4293/6.svg" alt="编辑">
+          </div>
+          <div class="add-tag">
+            <span class="add-tag-text">添加标签</span>
+            <img class="add-tag-icon" src="assets/CodeBuddyAssets/1808_4293/7.svg" alt="箭头">
+          </div>
+        </div>
+      </div>
+      <div class="divider">
+        <img src="assets/CodeBuddyAssets/1808_4293/8.svg" alt="" style="width: 100%;">
+      </div>
+      <div class="action-buttons">
+        <div class="action-item">
+          <div class="action-icon"><img src="assets/CodeBuddyAssets/1808_4293/9.svg" alt="上传"></div>
+          <div class="action-label">上传小云盘</div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon"><img src="assets/CodeBuddyAssets/1808_4293/10.svg" alt="批注"></div>
+          <div class="action-label">添加批注</div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon"><img src="assets/CodeBuddyAssets/1808_4293/11.svg" alt="签名"></div>
+          <div class="action-label">添加签名</div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon"><img src="assets/CodeBuddyAssets/1808_4293/12.svg" alt="水印"></div>
+          <div class="action-label">PDF水印</div>
+        </div>
+        <div class="action-item">
+          <div class="action-icon"><img src="assets/CodeBuddyAssets/1808_4293/13.svg" alt="长图"></div>
+          <div class="action-label">转为长图</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 广告区域 ==================== -->
+    <div class="ad-area-container">
+      <!-- Lottie 后景 z:1 -->
+      <div class="lottie-back-container" id="lottieBack"></div>
+
+      <!-- 广告卡片裁切层：包含主卡和轮播卡，统一层叠上下文 -->
+      <div class="ad-clip-wrapper" id="adClipWrapper">
+
+        <!-- 主卡 z-index:20 -->
+        <div class="ad-card-wrapper" id="adCardWrapper">
+          <!-- 蒙层：主卡移到侧边时显示 -->
+          <div class="card-overlay" id="mainCardOverlay" style="opacity:0; position:absolute; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.20); z-index:50; pointer-events:none;"></div>
+          <div class="ad-image-section">
+            <img src="assets/CodeBuddyAssets/2383_3530/35.png" alt="广告">
+            <div class="ad-tag">
+              <span class="ad-tag-text">广告</span>
+              <svg class="ad-tag-arrow" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.2041 6.50392C17.5816 6.85826 17.6004 7.45159 17.2461 7.82912L10.7939 14.7031C10.6186 14.89 10.3744 14.9969 10.1181 14.999C9.86195 15.0012 9.61592 14.8987 9.43748 14.7149L2.76561 7.84084C2.40501 7.46928 2.41456 6.87526 2.78612 6.51467C3.15758 6.15435 3.75074 6.16301 4.11131 6.5342L10.0996 12.7031L15.8789 6.54592C16.2332 6.16839 16.8266 6.14959 17.2041 6.50392Z" fill="white" fill-opacity="0.6"/></svg>
+            </div>
+          </div>
+          <div class="ad-text-section">
+            <div class="ad-description">加入数百万玩家的行列，建立村庄、组建部落，参加史诗般的部落对战！</div>
+            <div class="ad-meta">
+              <div class="ad-rating">
+                <span class="ad-rating-score">4.5</span>
+                <img class="ad-rating-star" src="assets/CodeBuddyAssets/1808_4293/15.svg" alt="星">
+              </div>
+              <div class="ad-meta-divider"></div>
+              <span class="ad-category">经营策略</span>
+              <div class="ad-meta-divider"></div>
+              <span class="ad-category">战争</span>
+            </div>
+          </div>
+          <div class="ad-app-section">
+            <div class="ad-app-info">
+              <img class="ad-app-icon" src="assets/CodeBuddyAssets/1808_4293/17.svg" alt="部落冲突">
+              <span class="ad-app-name">部落冲突</span>
+            </div>
+            <button class="ad-detail-btn"><span>查看详情</span></button>
+          </div>
+        </div>
+
+        <!-- 轮播卡片1：右侧卡，设计稿2号组件（HUAWEI P50 Pro / 京东） -->
+        <div class="carousel-wrap" id="wrap0">
+          <div class="carousel-card" id="card0">
+            <div class="card-inner">
+              <div class="card-overlay"></div>
+              <div class="ad-image-section">
+                <img src="assets/CodeBuddyAssets/2543_1337/1.png" alt="广告">
+                <div class="ad-tag"><span class="ad-tag-text">广告</span><svg class="ad-tag-arrow" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.2041 6.50392C17.5816 6.85826 17.6004 7.45159 17.2461 7.82912L10.7939 14.7031C10.6186 14.89 10.3744 14.9969 10.1181 14.999C9.86195 15.0012 9.61592 14.8987 9.43748 14.7149L2.76561 7.84084C2.40501 7.46928 2.41456 6.87526 2.78612 6.51467C3.15758 6.15435 3.75074 6.16301 4.11131 6.5342L10.0996 12.7031L15.8789 6.54592C16.2332 6.16839 16.8266 6.14959 17.2041 6.50392Z" fill="white" fill-opacity="0.6"/></svg></div>
+              </div>
+              <div class="ad-text-section">
+                <div class="ad-description">HUAWEI P50 Pro万象双环设计美学新生，将影像与艺术合二为一。</div>
+                <div class="ad-meta">
+                  <div class="ad-rating" style="width:auto; display:flex; align-items:center; gap:4px;">
+                    <img src="assets/CodeBuddyAssets/I2383_3766;15586_5593/1.svg" style="width:21px;height:21px;display:block;">
+                    <span class="ad-category">剩余时间 22:34:59</span>
+                  </div>
+                  <div class="ad-meta-divider"></div><span class="ad-category">限时优惠</span>
+                  <div class="ad-meta-divider"></div><span class="ad-category">最高8.8折</span>
+                </div>
+              </div>
+              <div class="ad-app-section">
+                <div class="ad-app-info"><img class="ad-app-icon" src="assets/CodeBuddyAssets/2511_1330/1.svg" alt="京东"><span class="ad-app-name">京东</span></div>
+                <button class="ad-detail-btn"><span>查看详情</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 轮播卡片2：左侧卡，设计稿3号组件（欧莱雅 / 巴黎欧莱雅） -->
+        <div class="carousel-wrap" id="wrap1">
+          <div class="carousel-card" id="card1">
+            <div class="card-inner">
+              <div class="card-overlay"></div>
+              <div class="ad-image-section">
+                <img src="assets/CodeBuddyAssets/2383_3530/8.png" alt="广告">
+                <div class="ad-tag"><span class="ad-tag-text">广告</span><svg class="ad-tag-arrow" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.2041 6.50392C17.5816 6.85826 17.6004 7.45159 17.2461 7.82912L10.7939 14.7031C10.6186 14.89 10.3744 14.9969 10.1181 14.999C9.86195 15.0012 9.61592 14.8987 9.43748 14.7149L2.76561 7.84084C2.40501 7.46928 2.41456 6.87526 2.78612 6.51467C3.15758 6.15435 3.75074 6.16301 4.11131 6.5342L10.0996 12.7031L15.8789 6.54592C16.2332 6.16839 16.8266 6.14959 17.2041 6.50392Z" fill="white" fill-opacity="0.6"/></svg></div>
+              </div>
+              <div class="ad-text-section">
+                <div class="ad-description">滋养如蜜，奢润娇颜。欧莱雅小蜜罐，深彻滋养，弹润透亮，启幕年轻光采。</div>
+                <div class="ad-meta">
+                  <span class="ad-category">好价活动</span>
+                  <div class="ad-meta-divider"></div><span class="ad-category">换季好礼</span>
+                </div>
+              </div>
+              <div class="ad-app-section">
+                <div class="ad-app-info"><img class="ad-app-icon" src="assets/CodeBuddyAssets/2511_1335/1.svg" alt="巴黎欧莱雅"><span class="ad-app-name">巴黎欧莱雅</span></div>
+                <button class="ad-detail-btn"><span>查看详情</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 轮播卡片3 -->
+        <div class="carousel-card" id="card2">
+          <div class="card-inner">
+            <div class="card-overlay"></div>
+            <div class="ad-image-section">
+              <img src="assets/CodeBuddyAssets/1808_4387/31.png" alt="广告">
+              <div class="ad-tag"><span class="ad-tag-text">广告</span><svg class="ad-tag-arrow" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.2041 6.50392C17.5816 6.85826 17.6004 7.45159 17.2461 7.82912L10.7939 14.7031C10.6186 14.89 10.3744 14.9969 10.1181 14.999C9.86195 15.0012 9.61592 14.8987 9.43748 14.7149L2.76561 7.84084C2.40501 7.46928 2.41456 6.87526 2.78612 6.51467C3.15758 6.15435 3.75074 6.16301 4.11131 6.5342L10.0996 12.7031L15.8789 6.54592C16.2332 6.16839 16.8266 6.14959 17.2041 6.50392Z" fill="white" fill-opacity="0.6"/></svg></div>
+            </div>
+            <div class="ad-text-section">
+              <div class="ad-description">HUAWEI P50 Pro万象双环设计美学新生，将影像与艺术合二为一。</div>
+              <div class="ad-meta">
+                <div class="ad-rating"><span class="ad-rating-score">4.8</span><img class="ad-rating-star" src="assets/CodeBuddyAssets/1808_4293/15.svg" alt="星"></div>
+                <div class="ad-meta-divider"></div><span class="ad-category">限时优惠</span>
+                <div class="ad-meta-divider"></div><span class="ad-category">最高8.8折</span>
+              </div>
+            </div>
+            <div class="ad-app-section">
+              <div class="ad-app-info"><img class="ad-app-icon" src="assets/CodeBuddyAssets/2511_1330/1.svg" alt="京东"><span class="ad-app-name">京东</span></div>
+              <button class="ad-detail-btn"><span>查看详情</span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 轮播卡片4 -->
+        <div class="carousel-card" id="card3">
+          <div class="card-inner">
+            <div class="card-overlay"></div>
+            <div class="ad-image-section">
+              <img src="assets/CodeBuddyAssets/1808_4387/30.png" alt="广告">
+              <div class="ad-tag"><span class="ad-tag-text">广告</span><svg class="ad-tag-arrow" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M17.2041 6.50392C17.5816 6.85826 17.6004 7.45159 17.2461 7.82912L10.7939 14.7031C10.6186 14.89 10.3744 14.9969 10.1181 14.999C9.86195 15.0012 9.61592 14.8987 9.43748 14.7149L2.76561 7.84084C2.40501 7.46928 2.41456 6.87526 2.78612 6.51467C3.15758 6.15435 3.75074 6.16301 4.11131 6.5342L10.0996 12.7031L15.8789 6.54592C16.2332 6.16839 16.8266 6.14959 17.2041 6.50392Z" fill="white" fill-opacity="0.6"/></svg></div>
+            </div>
+            <div class="ad-text-section">
+              <div class="ad-description">HUAWEI P50 Pro万象双环设计美学新生将影像与艺术合二为一。</div>
+              <div class="ad-meta">
+                <div class="ad-rating"><span class="ad-rating-score">4.6</span><img class="ad-rating-star" src="assets/CodeBuddyAssets/1808_4293/15.svg" alt="星"></div>
+                <div class="ad-meta-divider"></div><span class="ad-category">限时优惠</span>
+                <div class="ad-meta-divider"></div><span class="ad-category">新春福利</span>
+              </div>
+            </div>
+            <div class="ad-app-section">
+              <div class="ad-app-info"><img class="ad-app-icon" src="assets/CodeBuddyAssets/2511_1330/1.svg" alt="京东"><span class="ad-app-name">京东</span></div>
+              <button class="ad-detail-btn"><span>查看详情</span></button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /ad-clip-wrapper -->
+
+      <!-- Lottie 前景 z:10 -->
+      <div class="lottie-front-container" id="lottieFront"></div>
+
+      <!-- 底部轮播指示器（3张卡对应3个点） -->
+      <div class="bottom-dots" id="bottomDots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div><!-- /ad-area-container -->
+
+    <!-- 底部按钮 -->
+    <div class="bottom-actions">
+      <div class="buttons-container">
+        <button class="btn btn-secondary">发送文件</button>
+        <button class="btn btn-primary">查看我的文件</button>
+      </div>
+      <div class="home-indicator">
+        <div class="home-indicator-bar"></div>
+      </div>
+    </div>
+  </div><!-- /container -->
+
+  <script>
+    let lottieFrontAnim = null;
+    let lottieBackAnim = null;
+    let animationPlayed = false;
+
+    const $ = id => document.getElementById(id);
+    const lottieFrontContainer = $('lottieFront');
+    const lottieBackContainer  = $('lottieBack');
+    const adCardWrapper  = $('adCardWrapper');
+    const adClipWrapper  = $('adClipWrapper');
+    const bottomDots     = $('bottomDots');
+    const dots           = bottomDots.querySelectorAll('.dot');
+
+    // 5张卡参与轮播：[主卡, card0, card1, card2, card3]
+    const allCards = [adCardWrapper, $('card0'), $('card1'), $('card2'), $('card3')];
+    // 实际参与轮播的3个条目：主卡直接用adCardWrapper，轮播卡用wrap（旋转层）
+    // activeItems[i] = { wrap, card, overlay }
+    // 主卡：wrap===card===adCardWrapper，无card-inner
+    const activeItems = [
+      { wrap: adCardWrapper, card: adCardWrapper, overlay: document.getElementById('mainCardOverlay') },
+      { wrap: $('wrap0'), card: $('card0'), overlay: $('card0').querySelector('.card-overlay') },
+      { wrap: $('wrap1'), card: $('card1'), overlay: $('card1').querySelector('.card-overlay') }
+    ];
+    let current = 0;
+    let timer = null;
+
+    function updateDots(idx) {
+      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    }
+
+    // wrap：rotate + translate + opacity + zIndex（CSS独立属性，translate先于rotate执行，位移不受旋转影响）
+    // card：只做 scale（缩放），内容不旋转，始终水平
+    function applyPos(item, pos, instant, delayZIndex) {
+      const { wrap, card, overlay } = item;
+      const isMain = wrap === card;
+
+      if (instant) {
+        wrap.style.transition = 'none';
+        if (!isMain) card.style.transition = 'none';
+        wrap.offsetHeight;
+      }
+
+      if (pos === 'center') {
+        if (!delayZIndex) wrap.style.zIndex = '20';
+        wrap.style.opacity    = '1';
+        wrap.style.rotate     = '0deg';
+        wrap.style.translate  = '0px 0px';
+        wrap.style.pointerEvents = 'auto';
+        if (isMain) { wrap.style.scale = '1'; }
+        else        { card.style.scale = '1'; }
+        if (overlay) {
+          overlay.style.transition = 'none'; // 蒙层立即消失，无过渡
+          overlay.style.opacity = '0';
+          overlay.offsetHeight; // 强制回流
+          overlay.style.transition = ''; // 恢复过渡
+        }
+      } else if (pos === 'right') {
+        if (!delayZIndex) wrap.style.zIndex = '6';
+        wrap.style.opacity    = '1';
+        wrap.style.rotate     = '6deg';
+        wrap.style.translate  = '150px 30px';
+        wrap.style.pointerEvents = 'none';
+        if (isMain) { wrap.style.scale = '0.9'; }
+        else        { card.style.scale = '0.9'; }
+        if (overlay) overlay.style.opacity = '1';
+      } else if (pos === 'left') {
+        if (!delayZIndex) wrap.style.zIndex = '5';
+        wrap.style.opacity    = '1';
+        wrap.style.rotate     = '-6deg';
+        wrap.style.translate  = '-150px 30px';
+        wrap.style.pointerEvents = 'none';
+        if (isMain) { wrap.style.scale = '0.9'; }
+        else        { card.style.scale = '0.9'; }
+        if (overlay) overlay.style.opacity = '1';
+      } else { // hidden
+        wrap.style.transition = 'none';
+        if (!isMain) card.style.transition = 'none';
+        wrap.style.zIndex    = '1';
+        wrap.style.opacity   = '0';
+        wrap.style.rotate    = '0deg';
+        wrap.style.translate = '500px 0px';
+        wrap.style.pointerEvents = 'none';
+        if (isMain) { wrap.style.scale = '0.85'; }
+        else        { card.style.scale = '0.85'; }
+        wrap.offsetHeight;
+        wrap.style.transition = '';
+        if (!isMain) card.style.transition = '';
+      }
+
+      if (instant) {
+        wrap.offsetHeight;
+        wrap.style.transition = '';
+        if (!isMain) card.style.transition = '';
+      }
+    }
+
+    // 执行一次轮播切换（prev→next），统一管理 zIndex 时序
+    function doSlide(prevIdx, nextIdx) {
+      current = nextIdx;
+      activeItems.forEach((item, i) => {
+        const prevRel = ((i - prevIdx) % 3 + 3) % 3;
+        const nextRel = ((i - nextIdx) % 3 + 3) % 3;
+
+        // 运动全程 zIndex：
+        // 侧边→center（进入中间）：最上层 30
+        // center→侧边（离开中间）：中间层 10
+        // 侧边→侧边（穿越底部）：最下层 4
+        if      (prevRel !== 0 && nextRel === 0) item.wrap.style.zIndex = '30'; // 侧→中
+        else if (prevRel === 0 && nextRel !== 0) item.wrap.style.zIndex = '10'; // 中→侧
+        else                                     item.wrap.style.zIndex = '4';  // 侧→侧
+
+        const pos = nextRel === 0 ? 'center' : nextRel === 1 ? 'right' : 'left';
+        applyPos(item, pos, false, true); // 传 delayZIndex=true，跳过 applyPos 内部的 zIndex 设置
+
+        // 动画结束后恢复最终正确 zIndex
+        setTimeout(() => {
+          if      (nextRel === 0) item.wrap.style.zIndex = '20';
+          else if (nextRel === 1) item.wrap.style.zIndex = '6';
+          else                    item.wrap.style.zIndex = '5';
+        }, 510);
+      });
+      updateDots(current);
+    }
+
+    // 轮播：逆时针 右→中→左
+    function slideNext() {
+      const prev = current;
+      doSlide(prev, (prev + 1) % 3);
+    }
+
+    function startCarousel() {
+      if (timer) clearInterval(timer);
+      timer = setInterval(slideNext, 5000);
+    }
+
+    // 手动切换到指定索引（点击底部点 / 滑动触发）
+    function slideTo(idx) {
+      const prev = current;
+      const next = ((idx % 3) + 3) % 3;
+      if (next === prev) return;
+      doSlide(prev, next);
+      startCarousel();
+    }
+
+    function initLottie() {
+      if (lottieFrontAnim) lottieFrontAnim.destroy();
+      if (lottieBackAnim)  lottieBackAnim.destroy();
+
+      lottieFrontContainer.classList.remove('lottie-hidden');
+      lottieBackContainer.classList.remove('lottie-hidden');
+      lottieFrontContainer.innerHTML = '';
+      lottieBackContainer.innerHTML  = '';
+      adCardWrapper.classList.remove('expanded');
+      adCardWrapper.style.cssText = '';
+      // 重置主卡蒙层
+      const mainOverlay = document.getElementById('mainCardOverlay');
+      if (mainOverlay) mainOverlay.style.opacity = '0';
+      adClipWrapper.classList.remove('expanded');
+
+      // card2/card3 永久隐藏不参与轮播
+      [$('card2'), $('card3')].forEach(c => {
+        c.style.cssText = '';
+        c.style.opacity = '0';
+        c.style.zIndex = '0';
+        c.style.translate = '1000px 0px';
+      });
+
+      // wrap0/wrap1 初始隐藏在屏幕外
+      [$('wrap0'), $('wrap1')].forEach(w => {
+        w.style.cssText  = '';
+        w.style.rotate   = '0deg';
+        w.style.translate = '500px 0px';
+        w.style.opacity  = '0';
+        w.style.zIndex   = '1';
+      });
+      [$('card0'), $('card1')].forEach(c => {
+        c.style.cssText = '';
+        c.style.scale   = '0.9';
+        const ov = c.querySelector('.card-overlay');
+        if (ov) ov.style.opacity = '1';
+      });
+
+      bottomDots.classList.remove('visible');
+      if (timer) clearInterval(timer);
+      current = 0;
+      updateDots(0);
+      animationPlayed = false;
+
+      lottieFrontAnim = lottie.loadAnimation({
+        container: lottieFrontContainer,
+        renderer: 'svg', loop: false, autoplay: false,
+        path: 'assets/文件夹前 日间_副本.json',
+        rendererSettings: { preserveAspectRatio: 'xMidYMid meet' }
+      });
+      lottieBackAnim = lottie.loadAnimation({
+        container: lottieBackContainer,
+        renderer: 'svg', loop: false, autoplay: false,
+        path: 'assets/文件夹后 日间_副本.json',
+        rendererSettings: { preserveAspectRatio: 'xMidYMid meet' }
+      });
+
+      let loaded = 0;
+      const onLoaded = () => { if (++loaded === 2) playAnimation(); };
+      lottieFrontAnim.addEventListener('DOMLoaded', onLoaded);
+      lottieBackAnim.addEventListener('DOMLoaded', onLoaded);
+      lottieFrontAnim.addEventListener('complete', onComplete);
+    }
+
+    function playAnimation() {
+      if (animationPlayed) return;
+      lottieFrontAnim.goToAndPlay(0, true);
+      lottieBackAnim.goToAndPlay(0, true);
+      setTimeout(() => { adCardWrapper.classList.add('expanded'); }, 200);
+      setTimeout(() => { adClipWrapper.classList.add('expanded'); }, 400);
+    }
+
+    function onComplete() {
+      animationPlayed = true;
+      lottieFrontContainer.classList.add('lottie-hidden');
+      lottieBackContainer.classList.add('lottie-hidden');
+
+      // 给主卡加轮播 transition
+      adCardWrapper.style.transition = 'scale 0.5s cubic-bezier(0.4, 0, 0.2, 1), translate 0.5s cubic-bezier(0.4, 0, 0.2, 1), rotate 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease';
+
+      // 侧边卡出场：从中心向两侧扇形展开
+      setTimeout(() => {
+        const w0 = $('wrap0'), w1 = $('wrap1');
+        const c0 = $('card0'), c1 = $('card1');
+
+        // 步骤1：瞬移到中心，透明
+        w0.style.transition = 'none'; c0.style.transition = 'none';
+        w1.style.transition = 'none'; c1.style.transition = 'none';
+        w0.style.rotate = '0deg'; w0.style.translate = '0px 0px'; w0.style.opacity = '0'; w0.style.zIndex = '6';
+        w1.style.rotate = '0deg'; w1.style.translate = '0px 0px'; w1.style.opacity = '0'; w1.style.zIndex = '5';
+        c0.style.scale = '0.9';
+        c1.style.scale = '0.9';
+        w0.offsetHeight;
+
+        // 步骤2：扇形展开；wrap旋转+位移，card内容保持水平不旋转
+        requestAnimationFrame(() => {
+          w0.style.transition = ''; c0.style.transition = '';
+          w1.style.transition = ''; c1.style.transition = '';
+          w0.style.rotate = '6deg';  w0.style.translate = '150px 30px';  w0.style.opacity = '1';
+          w1.style.rotate = '-6deg'; w1.style.translate = '-150px 30px'; w1.style.opacity = '1';
+          const ov0 = c0.querySelector('.card-overlay');
+          const ov1 = c1.querySelector('.card-overlay');
+          if (ov0) ov0.style.opacity = '1';
+          if (ov1) ov1.style.opacity = '1';
+        });
+
+        current = 0;
+        updateDots(0);
+      }, 200);
+
+      setTimeout(() => { bottomDots.classList.add('visible'); }, 400);
+      setTimeout(() => { startCarousel(); }, 5000);
+    }
+
+    // 底部点点击切换
+    dots.forEach((dot, i) => {
+      dot.addEventListener('click', () => {
+        if (!animationPlayed) return;
+        slideTo(i);
+      });
+    });
+
+    // 广告区域左右滑动手势
+    let touchStartX = 0, touchStartY = 0;
+    const adArea = document.querySelector('.ad-area-container');
+    adArea.addEventListener('touchstart', e => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    adArea.addEventListener('touchend', e => {
+      if (!animationPlayed) return;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      if (Math.abs(dx) < 30 || Math.abs(dx) < Math.abs(dy)) return; // 距离太短或纵向滑动忽略
+      slideTo(dx < 0 ? current + 1 : current - 1); // 左滑→下一张，右滑→上一张
+    }, { passive: true });
+
+    document.addEventListener('DOMContentLoaded', initLottie);
+  </script>
+</body>
+</html>
